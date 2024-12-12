@@ -72,8 +72,8 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./notebooks:/home/hdb/work
-      - ./data:/home/hdb/data
+      - ./notebooks:/opt/airflow/notebooks
+      - ./data:/opt/airflow/data
     environment:
       - SPARK_HOME=/opt/spark
       - SPARK_MASTER=spark://spark-master:7077
@@ -81,9 +81,8 @@ services:
       - SPARK_EXECUTOR_MEMORY=1g
       - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
       - PYSPARK_PYTHON=python3
-      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+      - JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-arm64
       - JUPYTER_ENABLE_LAB=yes
-    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
     depends_on:
       - spark-master
 
