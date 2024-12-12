@@ -34,7 +34,6 @@ RUN pip install --no-cache-dir --user \
     jupyter \
     jupyterlab \
     pandas \
-    apache-airflow-client \
     findspark
 
 # The Spark environment variables are already set by the base image
