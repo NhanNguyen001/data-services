@@ -1,0 +1,47 @@
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        default-jdk \
+        curl \
+        procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Java home
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Create user first
+RUN useradd -ms /bin/bash hdb
+
+# Create directories and set permissions
+RUN mkdir -p /home/hdb/work /home/hdb/data && \
+    chown -R hdb:hdb /home/hdb
+
+# Switch to user
+USER hdb
+WORKDIR /home/hdb
+
+# Ensure local bin is in PATH
+ENV PATH="/home/hdb/.local/bin:${PATH}"
+
+# Install Python packages
+RUN pip install --no-cache-dir --user \
+    jupyter \
+    jupyterlab \
+    pyspark==3.5.0 \
+    apache-airflow-client \
+    pandas \
+    findspark
+
+# Set Spark environment variables
+ENV SPARK_HOME=/home/hdb/.local/lib/python3.11/site-packages/pyspark
+ENV PATH=$PATH:$SPARK_HOME/bin
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH
+ENV PYSPARK_PYTHON=python3
+ENV PYSPARK_DRIVER_PYTHON=python3
+
+# Set up Jupyter
+EXPOSE 8888
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--NotebookApp.token=''", "--NotebookApp.password=''"]
