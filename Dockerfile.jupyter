@@ -7,9 +7,9 @@ USER root
 
 LABEL maintainer="Nhan Nguyen <nhan2151@gmail.com>"
 
-# Install OpenJDK-8
+# Install OpenJDK-8 and required tools
 RUN apt-get update && \
-    apt-get install -y build-essential gcc software-properties-common curl wget gnupg && \
+    apt-get install -y build-essential gcc software-properties-common curl wget gnupg procps && \
     wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
     echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
@@ -20,6 +20,12 @@ RUN apt-get update && \
 ENV SPARK_VERSION=3.4.1
 ENV HADOOP_VERSION=3
 ENV SPARK_HOME=/opt/spark
+ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk-arm64
+ENV PATH=$PATH:$JAVA_HOME/bin:$SPARK_HOME/bin
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip
+ENV PYSPARK_PYTHON=python3
+ENV SPARK_MASTER=spark://spark-master:7077
+ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
 
 # Download and install Spark
 RUN mkdir -p ${SPARK_HOME} && \
@@ -43,8 +49,10 @@ RUN pip install --no-cache-dir \
 ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk-arm64
 RUN export JAVA_HOME
 ENV PATH=$PATH:$JAVA_HOME/bin:$SPARK_HOME/bin
-ENV PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip:/opt/spark/python/lib/py4j-0.10.9-src.zip
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip
 ENV SPARK_MASTER=spark://spark-master:7077
+ENV PYSPARK_PYTHON=python3
+ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash jupyter
